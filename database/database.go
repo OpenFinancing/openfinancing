@@ -61,6 +61,41 @@ func OpenDB() (*bolt.DB, error) {
 	return db, err
 }
 
+// TODO: need locks over this to ensure no one's using the db while we are
+func OpenDBTest() (*bolt.DB, error) {
+	// we need to check and create this directory if it doesn't exist
+	db, err := bolt.Open("yol.db", 0600, nil) // store this in its ownd database
+	if err != nil {
+		log.Println("Couldn't open database, exiting!")
+		return db, err
+	}
+	err = db.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists(ProjectsBucket) // the projects bucket contains all our projects
+		if err != nil {
+			return err
+		}
+		_, err = tx.CreateBucketIfNotExists(InvestorBucket) // the projects bucket contains all our projects
+		if err != nil {
+			return err
+		}
+		_, err = tx.CreateBucketIfNotExists(RecipientBucket) // the projects bucket contains all our projects
+		if err != nil {
+			return err
+		}
+		_, err = tx.CreateBucketIfNotExists(ContractorBucket) // the projects bucket contains all our projects
+		if err != nil {
+			return err
+		}
+		_, err = tx.CreateBucketIfNotExists(UserBucket) // the projects bucket contains all our projects
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	return db, err
+}
+
+
 // DeleteProject deltes a given value corresponding to the ky from the database
 // DeleteProject should be used only in cases where something is wrong from our side
 // while creating an project. For other cases, we should set Live to False and edit
