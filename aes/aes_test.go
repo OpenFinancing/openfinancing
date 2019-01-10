@@ -1,7 +1,9 @@
-// +build all travis
+// +build all
 
 package aes
 
+// ignoring travis because it doesn't like the new file creation thing.
+// TODO: fix this
 import (
 	"log"
 	"testing"
