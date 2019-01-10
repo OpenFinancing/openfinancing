@@ -137,7 +137,7 @@ func RetrieveBond(key int) (ConstructionBond, error) {
 
 // for the demo, the publickey and seed must be hardcoded and  given as a binary I guess
 // or worse, hardcode the seed and pubkey in the functions themselves
-func (a *ConstructionBond) InvestInProject(issuerPublicKey string, issuerSeed string, investor *Investor,
+func (a *ConstructionBond) Invest(issuerPublicKey string, issuerSeed string, investor *Investor,
 	recipient *Recipient, investmentAmountS string, investorSeed string, recipientSeed string) error {
 	// we want to invest in this specific bond
 	var err error
@@ -151,7 +151,7 @@ func (a *ConstructionBond) InvestInProject(issuerPublicKey string, issuerSeed st
 
 	if a.Params.INVAssetCode == "" {
 		// this person is the first investor, set the investor token name
-		INVAssetCode := AssetID(consts.INVAssetPrefix + assetName)
+		INVAssetCode := AssetID(consts.BondAssetPrefix + assetName)
 		a.Params.INVAssetCode = INVAssetCode           // set the investeor code
 		_ = CreateAsset(INVAssetCode, issuerPublicKey) // create the asset itself, since it would not have bene created earlier
 	}

@@ -113,6 +113,7 @@ func StartServer(port string) {
 	setupRecipientRPCs()
 	// setup recipient related RPCs
 	setupBondRPCs()
+	setupCoopRPCs()
 	portString := ":" + port // weird construction, but this should work
 	log.Fatal(http.ListenAndServe(portString, nil))
 }

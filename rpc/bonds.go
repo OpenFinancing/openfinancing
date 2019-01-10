@@ -103,7 +103,7 @@ func InvestInBond() {
 			log.Fatal(err)
 		}
 
-		err = iBond.InvestInProject(issuerPk, issuerSeed, &iInv, &iRec, invAmount, invSeed, recSeed)
+		err = iBond.Invest(issuerPk, issuerSeed, &iInv, &iRec, invAmount, invSeed, recSeed)
 		if err != nil {
 			log.Println(err)
 		}

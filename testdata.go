@@ -53,6 +53,18 @@ func InsertDummyData() error {
 		log.Fatal(err)
 	}
 
+	// newParams(mdate string, mrights string, stype string, intrate float64, rating string, bIssuer string, uWriter string
+	// unitCost float64, itype string, nUnits int, tax string
+	coop, err := database.NewCoop("Dec 21 2049", "Maturation Rights Link", "Security Type", 5.4, "AAA", "Bond Issuer", "underwriter.com",
+		100000, "Type of Unit", 1000)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = database.RetrieveCoop(coop.Params.Index)
+	if err != nil {
+		log.Fatal(err)
+	}
 	// NewOriginator(uname string, pwd string, Name string, Address string, Description string)
 	newOriginator, err := database.NewOriginator("john", "p", "x", "John Doe", "14 ABC Street London", "This is a sample originator")
 	if err != nil {
