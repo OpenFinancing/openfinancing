@@ -11,6 +11,11 @@ import (
 // go test --tags="all" -coverprofile=test.txt .
 func TestDb(t *testing.T) {
 	var err error
+	os.Remove(os.Getenv("HOME") + "/.openfinancing/database/" + "/yol.db")
+	err = os.MkdirAll(os.Getenv("HOME") + "/.openfinancing/database", os.ModePerm)
+	if err != nil {
+		t.Fatal(err)
+	}
 	db, err := OpenDB()
 	if err != nil {
 		t.Fatal(err)
@@ -31,7 +36,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
+	log.Println("INDEX IS: ", inv.U.Index)
 	recp, err := NewRecipient("user1", "blah", "blah", "cool")
 	if err != nil {
 		t.Fatal(err)
@@ -101,12 +106,12 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Index of first element doesn't match, quitting!")
 	}
 	log.Println("Retrieved projects: ", projects)
-	oProjects, err := RetrieveAllProjects()
+	oProjects, err := RetrieveProjects(OriginProject)
 	if err != nil {
 		log.Println("Retrieve all error: ", err)
 		t.Errorf("Failed in retrieving all originated projects")
 	}
-	if len(oProjects) != 2 {
+	if len(oProjects) != 0 {
 		log.Println("OPROJECTS: ", len(oProjects))
 		t.Fatalf("Originated projects present!")
 	}
@@ -327,5 +332,4 @@ func TestDb(t *testing.T) {
 	// can't test the payback stuff since we need the recipient to have funds and stuff
 	// maybe test the investor sending funds and stuff as well? but that's imported
 	// by main and we could have problems here related to that
-	os.Remove("yol.db")
 }

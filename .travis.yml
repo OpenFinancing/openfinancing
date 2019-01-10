@@ -5,14 +5,13 @@ language: go
 go:
   - 1.11.x
 before_install:
-  - cd stellar
   - go get github.com/stellar/go
   - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
   - cd ${TRAVIS_HOME}/gopath/src/github.com/stellar/go
   #- echo -e "Host *\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
   #- rm Gopkg.lock
   - dep ensure -v
-  - cd ${TRAVIS_HOME}/gopath/src/github.com/YaleOpenLab/smartPropertyMVP/stellar
+  - cd ${TRAVIS_HOME}/gopath/src/github.com/OpenFinancing/openfinancing
 script:
   - go test --tags="travis" -race -coverprofile=coverage.txt -covermode=atomic ./...
 after_success:

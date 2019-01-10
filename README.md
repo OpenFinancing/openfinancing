@@ -1,5 +1,8 @@
 # Stellar PoC
 
+[![Build Status](https://travis-ci.org/OpenFinancing/openfinancing.svg?branch=master)](https://travis-ci.org/OpenFinancing/openfinancing)
+[![Codecov](https://codecov.io/gh/OpenFinancing/openfinancing/branch/master/graph/badge.svg)](https://codecov.io/gh/OpenFinancing/openfinancing)
+
 This sub-repo contains the WIP Stellar Proof of Concept. This has some design
 tradeoffs compared to the Ethereum implementation, especially in the concept of
 "state" in Ethereum.

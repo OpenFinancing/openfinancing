@@ -40,15 +40,15 @@ func TestXLM(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, _, err = SendXLM(destPubKey, "1", seed)
+	_, _, err = SendXLM(destPubKey, "1", seed, "")
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, _, err = SendXLM(destPubKey, "1", "wrong seed")
+	_, _, err = SendXLM(destPubKey, "1", "wrong seed", "")
 	if err == nil {
 		t.Fatalf("Wrong seed, shouldn't work!")
 	}
-	_, _, err = SendXLM("wrong pubkey", "1", seed)
+	_, _, err = SendXLM("wrong pubkey", "1", seed, "")
 	if err == nil {
 		t.Fatalf("Wrong pubkey, shouldn't work!")
 	}
