@@ -15,6 +15,8 @@ var InvestorBucket = []byte("Investors")
 var RecipientBucket = []byte("Recipients")
 var ContractorBucket = []byte("Contractors")
 var UserBucket = []byte("Users")
+var BondBucket = []byte("Bonds")
+var CoopBucket = []byte("Coop")
 
 func CreateHomeDir() {
 	if _, err := os.Stat(consts.HomeDir); os.IsNotExist(err) {
@@ -53,6 +55,14 @@ func OpenDB() (*bolt.DB, error) {
 			return err
 		}
 		_, err = tx.CreateBucketIfNotExists(UserBucket) // the projects bucket contains all our projects
+		if err != nil {
+			return err
+		}
+		_, err = tx.CreateBucketIfNotExists(BondBucket) // the projects bucket contains all our projects
+		if err != nil {
+			return err
+		}
+		_, err = tx.CreateBucketIfNotExists(CoopBucket) // the projects bucket contains all our projects
 		if err != nil {
 			return err
 		}

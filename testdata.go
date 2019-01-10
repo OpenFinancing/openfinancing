@@ -15,7 +15,6 @@ func InsertDummyData() error {
 	var contract1 database.Project
 	var contract2 database.Project
 	var contract3 database.Project
-
 	var rec database.Recipient
 	allRecs, err := database.RetrieveAllRecipients()
 	if err != nil {
@@ -47,6 +46,13 @@ func InsertDummyData() error {
 			log.Fatal(err)
 		}
 	}
+
+	_, err = database.NewBond("Dec 21 2049", "Maturation Rights Link", "Security Type", 5.4, "AAA", "Bond Issuer", "underwriter.com",
+		100000, "Instrument Type", 100, "No Fed tax for 10 years", 1)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// NewOriginator(uname string, pwd string, Name string, Address string, Description string)
 	newOriginator, err := database.NewOriginator("john", "p", "x", "John Doe", "14 ABC Street London", "This is a sample originator")
 	if err != nil {

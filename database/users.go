@@ -7,6 +7,7 @@ import (
 
 	aes "github.com/OpenFinancing/openfinancing/aes"
 	utils "github.com/OpenFinancing/openfinancing/utils"
+	wallet "github.com/OpenFinancing/openfinancing/wallet"
 	xlm "github.com/OpenFinancing/openfinancing/xlm"
 	"github.com/boltdb/bolt"
 )
@@ -185,4 +186,8 @@ func (a *User) GenKeys(seedpwd string) error {
 	a.EncryptedSeed, err = aes.Encrypt([]byte(seed), seedpwd)
 	err = a.Save()
 	return err
+}
+
+func (a *User) GetSeed(seedpwd string) (string, error) {
+	return wallet.DecryptSeed(a.EncryptedSeed, seedpwd)
 }
