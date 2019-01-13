@@ -4,7 +4,7 @@ import (
 	aes "github.com/OpenFinancing/openfinancing/aes"
 	ipfs "github.com/OpenFinancing/openfinancing/ipfs"
 	wallet "github.com/OpenFinancing/openfinancing/wallet"
-	xlm "github.com/OpenFinancing/openfinancingr/xlm"
+	xlm "github.com/OpenFinancing/openfinancing/xlm"
 	"log"
 )
 
