@@ -82,7 +82,7 @@ func SetupRoutest() {
 
 func StartServer() {
 	SetupRoutest()
-	err := http.ListenAndServeTLS(":"+consts.TlsPort, "ssl/server.crt", "ssl/server.key", nil)
+	err := http.ListenAndServeTLS(":"+consts.Tlsport, "ssl/server.crt", "ssl/server.key", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
