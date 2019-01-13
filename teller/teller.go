@@ -5,6 +5,8 @@ import (
 	"github.com/chzyer/readline"
 	"github.com/fatih/color"
 	"log"
+	"os"
+	"os/signal"
 	"strings"
 
 	consts "github.com/OpenFinancing/openfinancing/consts"
@@ -18,6 +20,9 @@ import (
 // the blockchain at frequient intervals with power generation data in the memo
 // field of the tx.
 // Polling interval would be 5 minutes, 1440/5 = 288 updates a day
+// MW Is this the amount of calls from the rasberry pi per day? This might be too much.
+// Not sure what the colors here mean.
+// SHould this be what is listening to a protected MQTT channel?
 
 var PublicKey string
 var Seed string
@@ -43,11 +48,26 @@ func main() {
 	t.Info = "Console CLI Client for testing"
 	t.Location = "Location unknown. Scanning.."
 	t.UniqueId = "password" // the thing we need for unlocking the auth.txt file
+	go StartServer()
+	signalChan := make(chan os.Signal, 1)
+	cleanupDone := make(chan struct{})
+	signal.Notify(signalChan, os.Interrupt)
+	go func() {
+		<-signalChan
+		fmt.Println("\nSigint received in quit function. not quitting!")
+		close(cleanupDone)
+	}()
 	for {
 		// setup reader with max 4K input chars
 		msg, err := rl.Readline()
 		if err != nil {
-			EndHandler(t) // error, user wants to quit
+			var err error
+			err = EndHandler(t) // error, user wants to quit
+			for err != nil {
+				log.Println(err)
+				err = EndHandler(t)
+				<-cleanupDone // to prevent user from quitting when sigin arrives
+			}
 			break
 		}
 		msg = strings.TrimSpace(msg)

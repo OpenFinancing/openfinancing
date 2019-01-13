@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log"
 
+	assets "github.com/OpenFinancing/openfinancing/assets"
 	consts "github.com/OpenFinancing/openfinancing/consts"
 	database "github.com/OpenFinancing/openfinancing/database"
 	utils "github.com/OpenFinancing/openfinancing/utils"
-	assets "github.com/OpenFinancing/openfinancing/assets"
 	"github.com/boltdb/bolt"
 	"github.com/stellar/go/build"
 )
@@ -140,7 +140,7 @@ func (a *ConstructionBond) Invest(issuerPublicKey string, issuerSeed string, inv
 	if a.Params.INVAssetCode == "" {
 		// this person is the first investor, set the investor token name
 		INVAssetCode := assets.AssetID(consts.BondAssetPrefix + assetName)
-		a.Params.INVAssetCode = INVAssetCode           // set the investeor code
+		a.Params.INVAssetCode = INVAssetCode                  // set the investeor code
 		_ = assets.CreateAsset(INVAssetCode, issuerPublicKey) // create the asset itself, since it would not have bene created earlier
 	}
 	/*

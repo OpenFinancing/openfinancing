@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	bonds "github.com/OpenFinancing/openfinancing/platforms/bonds"
 	database "github.com/OpenFinancing/openfinancing/database"
+	bonds "github.com/OpenFinancing/openfinancing/platforms/bonds"
 	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
 	utils "github.com/OpenFinancing/openfinancing/utils"
 )

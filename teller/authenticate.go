@@ -4,7 +4,7 @@ import (
 	aes "github.com/OpenFinancing/openfinancing/aes"
 	ipfs "github.com/OpenFinancing/openfinancing/ipfs"
 	wallet "github.com/OpenFinancing/openfinancing/wallet"
-	xlm "github.com/OpenFinancing/openfinancing/xlm"
+	xlm "github.com/OpenFinancing/openfinancingr/xlm"
 	"log"
 )
 
@@ -38,6 +38,16 @@ func Authenticate() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	_, err = xlm.GetNativeBalance(pubkey)
+	if err != nil {
+		// no funds
+		err = xlm.GetXLM(pubkey)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	PublicKey = pubkey
+	Seed = string(data)
 }
 
 // New generates a new password pair that should be used to authenticate a teller
@@ -63,32 +73,39 @@ func BlockStamp() (string, error) {
 }
 
 // EndHandler runs when the teller shuts down
-func EndHandler(t Client) {
+func EndHandler(t Client) error {
 	log.Println("Gracefully shutting down, please do not press any buttons in the process")
 	var err error
 	NowHash, err = BlockStamp()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	log.Printf("StartHash: %s, NowHash: %s", StartHash, NowHash)
 	hashString := "Device Shutting down. Info: " + t.Info + " Device Location: " + t.Location + " Device Unique ID: " + t.UniqueId + " " + StartHash + NowHash
 	// need to hash this with ipfs
 	ipfsHash, err := ipfs.AddStringToIpfs(hashString)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	log.Println("ipfs hash: ", ipfsHash)
 	memoText := "IPFSHASH: " + ipfsHash
 	// 10 + 46 (ipfs hash length) characters
 	firstHalf := memoText[:28]
 	secondHalf := memoText[28:]
+	log.Println("PUBKEY: ", PublicKey)
 	_, tx1, err := xlm.SendXLM(PublicKey, "1", Seed, firstHalf)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	_, tx2, err := xlm.SendXLM(PublicKey, "1", Seed, secondHalf)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	log.Printf("tx1 hash: %s, tx2 hash: %s", tx1, tx2)
+	return nil
 }
+
+// so the teller will be run on the hub and has some data that the platform might need
+//  the teller must serve some data to other entities as well. So we need a server for that
+// and this must be over tls for preventing mitm attacks and a good tls certificate from an authorized
+// provider

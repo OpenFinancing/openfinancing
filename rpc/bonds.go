@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strings"
 
-	bonds "github.com/OpenFinancing/openfinancing/platforms/bonds"
 	database "github.com/OpenFinancing/openfinancing/database"
+	bonds "github.com/OpenFinancing/openfinancing/platforms/bonds"
 	utils "github.com/OpenFinancing/openfinancing/utils"
 	xlm "github.com/OpenFinancing/openfinancing/xlm"
 )

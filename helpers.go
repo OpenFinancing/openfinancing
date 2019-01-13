@@ -6,8 +6,8 @@ import (
 
 	database "github.com/OpenFinancing/openfinancing/database"
 	platform "github.com/OpenFinancing/openfinancing/platforms"
-	scan "github.com/OpenFinancing/openfinancing/scan"
 	solar "github.com/OpenFinancing/openfinancing/platforms/solar"
+	scan "github.com/OpenFinancing/openfinancing/scan"
 	xlm "github.com/OpenFinancing/openfinancing/xlm"
 )
 

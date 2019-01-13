@@ -1,9 +1,9 @@
 package stablecoin
 
 import (
-	assets "github.com/YaleOpenLab/smartPropertyMVP/stellar/assets"
-	consts "github.com/YaleOpenLab/smartPropertyMVP/stellar/consts"
-	xlm "github.com/YaleOpenLab/smartPropertyMVP/stellar/xlm"
+	assets "github.com/OpenFinancing/openfinancing/assets"
+	consts "github.com/OpenFinancing/openfinancing/consts"
+	xlm "github.com/OpenFinancing/openfinancing/xlm"
 	"log"
 )
 
