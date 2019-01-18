@@ -332,5 +332,5 @@ func (project *Project) updateRecipient(a database.Recipient) error {
 		err := a.Save()
 		return err
 	}
-	return fmt.Errorf("Not found")
+	return nil
 }

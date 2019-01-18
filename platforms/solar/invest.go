@@ -11,6 +11,11 @@ import (
 	"github.com/stellar/go/build"
 )
 
+// this file does not contain any tests associated with it right now. In the future,
+// once we have a robust frontend, we can modify the CLI interface to act as a test
+// for this file
+
+// InvestInProject invests in a particular solar project given required parameters
 func InvestInProject(projIndex int, issuerPubkey string, issuerSeed string, invIndex int, recpIndex int, invAmountS string, invSeed string, recpSeed string) (Project, error) {
 	var err error
 

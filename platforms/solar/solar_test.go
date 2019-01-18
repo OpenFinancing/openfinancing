@@ -536,5 +536,10 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("not able to catch invalid entity error")
 	}
+	var recpx database.Recipient
+	err = dummy.updateRecipient(recpx)
+	if err != nil {
+		t.Fatal(err)
+	}
 	os.Remove(os.Getenv("HOME") + "/.openfinancing/database/" + "/yol.db")
 }
