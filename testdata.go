@@ -14,9 +14,9 @@ func InsertDummyData() error {
 	var err error
 	// populate database with dumym data
 	var project1 solar.SolarParams
-	var contract1 solar.SolarProject
-	var contract2 solar.SolarProject
-	var contract3 solar.SolarProject
+	var contract1 solar.Project
+	var contract2 solar.Project
+	var contract3 solar.Project
 	var rec database.Recipient
 	allRecs, err := database.RetrieveAllRecipients()
 	if err != nil {
@@ -106,13 +106,13 @@ func InsertDummyData() error {
 	project1.Location = "India Basin, San Francisco"
 	project1.MoneyRaised = 0
 	project1.Metadata = "India Basin is an upcoming creative project based in San Francisco that seeks to invite innovators from all around to participate"
-	project1.INVAssetCode = ""
-	project1.DEBAssetCode = ""
-	project1.PBAssetCode = ""
+	project1.InvestorAssetCode = ""
+	project1.DebtAssetCode = ""
+	project1.PaybackAssetCode = ""
 	project1.DateInitiated = utils.Timestamp()
 	project1.Years = 3
-	project1.ProjectRecipient = rec
 	contract1.Params = project1
+	contract1.ProjectRecipient = rec
 	contract1.Contractor = c1
 	contract1.Originator = newOriginator
 	contract1.Stage = 3
@@ -127,12 +127,12 @@ func InsertDummyData() error {
 	project1.Location = "Kendall Square, Boston"
 	project1.MoneyRaised = 0
 	project1.Metadata = "Kendall Square is set in the heart of Cambridge and is a popular startup IT hub"
-	project1.INVAssetCode = ""
-	project1.DEBAssetCode = ""
-	project1.PBAssetCode = ""
+	project1.InvestorAssetCode = ""
+	project1.DebtAssetCode = ""
+	project1.PaybackAssetCode = ""
 	project1.DateInitiated = utils.Timestamp()
 	project1.Years = 5
-	project1.ProjectRecipient = rec
+	contract2.ProjectRecipient = rec
 	contract2.Params = project1
 	contract2.Contractor = c1
 	contract2.Originator = newOriginator
@@ -148,12 +148,12 @@ func InsertDummyData() error {
 	project1.Location = "Trafalgar Square, London"
 	project1.MoneyRaised = 0
 	project1.Metadata = "Trafalgar Square is set in the heart of London's financial district, with big banks all over"
-	project1.INVAssetCode = ""
-	project1.DEBAssetCode = ""
-	project1.PBAssetCode = ""
+	project1.InvestorAssetCode = ""
+	project1.DebtAssetCode = ""
+	project1.PaybackAssetCode = ""
 	project1.DateInitiated = utils.Timestamp()
 	project1.Years = 7
-	project1.ProjectRecipient = rec
+	contract3.ProjectRecipient = rec
 	contract3.Params = project1
 	contract3.Contractor = c1
 	contract3.Originator = newOriginator
@@ -163,7 +163,7 @@ func InsertDummyData() error {
 		return fmt.Errorf("Error inserting project into db")
 	}
 
-	pc, err := newOriginator.OriginContract("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", 1) // 1 is the idnex for martin
+	pc, err := newOriginator.Originate("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", 1) // 1 is the idnex for martin
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -187,11 +187,11 @@ func InsertDummyData() error {
 		log.Fatal(err)
 	}
 
-	_, err = solar.RetrieveAllContractEntities("originator")
+	_, err = solar.RetrieveAllEntities("originator")
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, err = solar.RetrieveAllContractEntities("contractor")
+	_, err = solar.RetrieveAllEntities("contractor")
 	if err != nil {
 		log.Fatal(err)
 	}

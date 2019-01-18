@@ -34,19 +34,27 @@ import (
 // that it sent and if not, raises the dispute since the forward DEBToken payment
 // is on chain and resolves the dispute itself using existing off chain legal frameworks
 // (issued bonds, agreements, etc)
-func Payback(a *database.Recipient, uContract SolarProject, assetName string, issuerPubkey string, amount string, seed string) error {
+func Payback(recpIndex int, projIndex int, assetName string, issuerPubkey string, issuerSeed string, amount string, seed string) error {
+	recipient, err := database.RetrieveRecipient(recpIndex)
+	if err != nil {
+		return err
+	}
+	project, err := RetrieveProject(projIndex)
+	if err != nil {
+		return err
+	}
 	// once we have the stablecoin here, we can remove the assetName
-	StableBalance, err := xlm.GetAssetBalance(a.U.PublicKey, "STABLEUSD")
+	StableBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, "STABLEUSD")
 	// checks for the stablecoin asset
 	if err != nil {
 		log.Println("YOU HAVE NO STABLECOIN BALANCE, PLEASE REFILL ACCOUNT")
-		return fmt.Errorf("YOU HAVE NO STABLECOIN BALANCE, PLEASE REFILL ACCOUNT")
+		return err
 	}
 
-	DEBAssetBalance, err := xlm.GetAssetBalance(a.U.PublicKey, assetName)
+	DEBAssetBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, assetName)
 	if err != nil {
 		log.Println("Don't have the debt asset in possession")
-		log.Fatal(err)
+		return err
 	}
 
 	if utils.StoF(amount) > utils.StoF(StableBalance) {
@@ -69,17 +77,17 @@ func Payback(a *database.Recipient, uContract SolarProject, assetName string, is
 	// hardcode for now, need to add the oracle here so that we
 	// can do this dynamically
 	// send amount worth DEBTokens back to issuer
-	confHeight, txHash, err := a.SendAssetToIssuer(assetName, issuerPubkey, amount, seed)
+	confHeight, txHash, err := recipient.SendAssetToIssuer(assetName, issuerPubkey, amount, seed)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
 	log.Println("Paid debt amount: ", amount, " back to issuer, tx hash: ", txHash, " ", confHeight)
-	log.Println("Checking balance to see if our account was debited")
-	newBalance, err := xlm.GetAssetBalance(a.U.PublicKey, assetName)
+	// log.Println("Checking balance to see if our account was debited")
+	newBalance, err := xlm.GetAssetBalance(recipient.U.PublicKey, assetName)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	newBalanceFloat := utils.StoF(newBalance)
@@ -102,14 +110,14 @@ func Payback(a *database.Recipient, uContract SolarProject, assetName string, is
 	}
 	// we need to update the database here
 	// no need to retrieve this project again because we have it already
-	uContract.Params.BalLeft -= paidAmount
-	uContract.Params.DateLastPaid = utils.Timestamp()
-	if uContract.Params.BalLeft == 0 {
+	project.Params.BalLeft -= paidAmount
+	project.Params.DateLastPaid = utils.Timestamp()
+	if project.Params.BalLeft == 0 {
 		log.Println("YOU HAVE PAID OFF THIS ASSET, TRANSFERRING OWNERSHIP OF ASSET TO YOU")
 		// don't delete the asset from the received assets list, we still need it so
 		// that we can look back and find out hwo many assets this particular
 		// enttiy has been invested in, have a leaderboard kind of thing, etc.
-		uContract.Stage = 7
+		project.Stage = 7
 		// we should call neighbourly or some ohter partner here to transfer assets
 		// using the bond they provide us with
 		// the nice part here is that the recipient can not pay off more than what is
@@ -117,12 +125,18 @@ func Payback(a *database.Recipient, uContract SolarProject, assetName string, is
 	}
 	// balLeft must be updated on the server side and can be challenged easily
 	// if there's some discrepancy since the tx's are on the blockchain
-	err = UpdateProjectSlice(a, uContract.Params)
+	err = sendPaybackAsset(project, recipient.U.PublicKey, amount, issuerSeed, issuerPubkey)
+	if err != nil {
+		log.Println("Sending back payback asset failed, please try again!", err)
+		return err
+	}
+
+	err = project.updateRecipient(recipient)
 	if err != nil {
 		return err
 	}
-	fmt.Println("UPDATED ORDER: ", uContract.Params)
-	err = uContract.Save()
+
+	err = project.Save()
 	if err != nil {
 		return err
 	}
@@ -131,7 +145,7 @@ func Payback(a *database.Recipient, uContract SolarProject, assetName string, is
 
 // CalculatePayback is a TODO function that should simply sum the PBToken
 // balance and then return them to the frontend UI for a nice display
-func (project SolarProject) CalculatePayback(amount string) string {
+func (project Project) CalculatePayback(amount string) string {
 	// the idea is that we should be able to pass an assetId to this function
 	// and it must calculate how much time we have left for payback. For this example
 	// until we do the db stuff, lets pass a few params (although this could be done

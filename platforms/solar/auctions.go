@@ -27,15 +27,15 @@ type ContractAuction struct {
 	// contractors who want to get this price. This is a blind auction and the
 	// choosing criteria is just price for now.
 	// TODO: decide this criteria
-	AllContracts    []SolarProject
+	AllContracts    []Project
 	AllContractors  []Entity
-	WinningContract SolarProject // do we need this?
+	WinningContract Project // do we need this?
 }
 
 // auctions contains stuff related to choosing the best contract and potentially
 // future auction logic that might need to be housed here
-func SelectContractByPrice(arr []SolarProject) (SolarProject, error) {
-	var a SolarProject
+func SelectContractByPrice(arr []Project) (Project, error) {
+	var a Project
 	if len(arr) == 0 {
 		return a, fmt.Errorf("Empty array passed!")
 	}
@@ -50,8 +50,8 @@ func SelectContractByPrice(arr []SolarProject) (SolarProject, error) {
 	return a, nil
 }
 
-func SelectContractByTime(arr []SolarProject) (SolarProject, error) {
-	var a SolarProject
+func SelectContractByTime(arr []Project) (Project, error) {
+	var a Project
 	if len(arr) == 0 {
 		return a, fmt.Errorf("Empty array passed!")
 	}

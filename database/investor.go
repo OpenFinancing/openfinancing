@@ -2,7 +2,9 @@ package database
 
 import (
 	"encoding/json"
+	"fmt"
 
+	assets "github.com/OpenFinancing/openfinancing/assets"
 	utils "github.com/OpenFinancing/openfinancing/utils"
 	xlm "github.com/OpenFinancing/openfinancing/xlm"
 	"github.com/boltdb/bolt"
@@ -25,9 +27,9 @@ type Investor struct {
 	AmountInvested float64
 	// total amount, would be nice to track to contact them,
 	// give them some kind of medals or something
-	InvestedAssets []string
-	InvestedBonds  []string
-	InvestedCoops  []string
+	InvestedSolarProjects []string
+	InvestedBonds         []string
+	InvestedCoops         []string
 	// array of asset codes this user has invested in
 	// also I think we need a username + password for logging on to the platform itself
 	// linking it here for now
@@ -92,7 +94,8 @@ func RetrieveInvestor(key int) (Investor, error) {
 		b := tx.Bucket(InvestorBucket)
 		x := b.Get(utils.ItoB(key))
 		if x == nil {
-			return nil
+			// no investor with the specific details
+			return fmt.Errorf("No investor found with required credentials")
 		}
 		return json.Unmarshal(x, &inv)
 	})
@@ -169,20 +172,7 @@ func (a *Investor) AddVotingBalance(votes int) error {
 // and asset issuer (i.e. the platform) with a _limit_ set on the maximum amount of tokens that can be sent
 // through the trust channel. Each trustline costs 0.5XLM.
 func (a *Investor) TrustAsset(asset build.Asset, limit string, seed string) (string, error) {
-	// TRUST is FROM recipient TO issuer
-	trustTx, err := build.Transaction(
-		build.SourceAccount{a.U.PublicKey},
-		build.AutoSequence{SequenceProvider: xlm.TestNetClient},
-		build.TestNetwork,
-		build.Trust(asset.Code, asset.Issuer, build.Limit(limit)),
-	)
-
-	if err != nil {
-		return "", err
-	}
-
-	_, hash, err := xlm.SendTx(seed, trustTx)
-	return hash, err
+	return assets.TrustAsset(asset, limit, a.U.PublicKey, seed)
 }
 
 // CanInvest checks whether an investor has the required balance to invest in a project

@@ -2,6 +2,7 @@ package solar
 
 import (
 	"fmt"
+
 	database "github.com/OpenFinancing/openfinancing/database"
 	utils "github.com/OpenFinancing/openfinancing/utils"
 )
@@ -17,11 +18,11 @@ import (
 // An alternative is to have a reputation system for contractors.
 
 //TODO: A given Contractor right now is allowed only for one final bid for blind
-// auction advantages (i.e. no price disovcery, etc). If we want to change this, we must
+// auction advantages (i.e. no price discovery, etc). If we want to change this, we must
 // Also, have some kind of deposit for Contractors (5% or something) so that they
 // don't go back on their investment and slash their ivnestment by 10% if this happens
 // and distribute that amount to the recipient directly and reduce everyone's bids
-// by that amount to account for the change in underlying SolarProject
+// by that amount to account for the change in underlying Project
 // also, a given Contractor right now is allowed only for one final bid for blind
 // auction advantages (no price disvocery, etc). If we want to change this, we must
 // have an auction handler that will take care of this.
@@ -30,11 +31,11 @@ import (
 func NewContractor(uname string, pwd string, seedpwd string, Name string, Address string, Description string) (Entity, error) {
 	// Create a new entity with the boolean of 'contractor' set to 'true.' This is done just by passing the string "contractor"
 	// TODO: Consider other specific information needed for contractors, other than the ones set for users and entities. It can go here, or set as a separate struct.
-	return NewEntity(uname, pwd, seedpwd, Name, Address, Description, "contractor")
+	return newEntity(uname, pwd, seedpwd, Name, Address, Description, "contractor")
 }
 
-func (contractor *Entity) ProposeContract(panelSize string, totalValue int, location string, years int, metadata string, recIndex int, projectIndex int) (SolarProject, error) {
-	var pc SolarProject
+func (contractor *Entity) Propose(panelSize string, totalValue int, location string, years int, metadata string, recIndex int, projectIndex int) (Project, error) {
+	var pc Project
 	var err error
 
 	// for this, create a new contract and store in the contracts db. We are sorting
@@ -51,10 +52,10 @@ func (contractor *Entity) ProposeContract(panelSize string, totalValue int, loca
 	pc.Params.Metadata = metadata
 	pc.Params.DateInitiated = utils.Timestamp()
 	iRecipient, err := database.RetrieveRecipient(recIndex)
-	if iRecipient.U.Index == 0 {
-		return pc, fmt.Errorf("Recipient not found!")
+	if err != nil {
+		return pc, err
 	}
-	pc.Params.ProjectRecipient = iRecipient
+	pc.ProjectRecipient = iRecipient
 	pc.Stage = 2 // 2 since we need to filter this out while retrieving the propsoed contracts
 	pc.Contractor = *contractor
 	// instead of storing in this proposedcontracts slice, store it as a project, but not a contract and retrieve by stage

@@ -194,7 +194,7 @@ func OriginContractPrompt(contractor *solar.Entity) error {
 	if err != nil {
 		return err
 	}
-	originContract, err := contractor.OriginContract(panelSize, totalValue, location, years, metadata, recIndex)
+	originContract, err := contractor.Originate(panelSize, totalValue, location, years, metadata, recIndex)
 	if err != nil {
 		return err
 	}
@@ -244,7 +244,7 @@ func ProposeContractPrompt(contractor *solar.Entity) error {
 	if err != nil {
 		return err
 	}
-	originContract, err := contractor.ProposeContract(panelSize, totalValue, location, years, metadata, recIndex, contractIndex)
+	originContract, err := contractor.Propose(panelSize, totalValue, location, years, metadata, recIndex, contractIndex)
 	if err != nil {
 		return err
 	}
@@ -255,7 +255,7 @@ func ProposeContractPrompt(contractor *solar.Entity) error {
 
 func Stage3ProjectsDisplayPrompt() {
 	fmt.Println("------------LIST OF ALL AVAILABLE PROJECTS------------")
-	allProjects, err := solar.RetrieveProjects(solar.FinalizedProject)
+	allProjects, err := solar.RetrieveProjectsAtStage(solar.FinalizedProject)
 	if err != nil {
 		log.Println("Error retrieving all projects from the database")
 	} else {
@@ -265,7 +265,7 @@ func Stage3ProjectsDisplayPrompt() {
 
 func DisplayOriginProjects() {
 	fmt.Println("PRINTING ALL ORIGINATED PROJECTS: ")
-	x, err := solar.RetrieveProjects(solar.OriginProject)
+	x, err := solar.RetrieveProjectsAtStage(solar.OriginProject)
 	if err != nil {
 		log.Println(err)
 	} else {

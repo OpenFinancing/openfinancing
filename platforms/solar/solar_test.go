@@ -22,17 +22,17 @@ func TestDb(t *testing.T) {
 	}
 	oldDbDir := consts.DbDir
 	consts.DbDir = "blah" // set to a false db so that we can test errors arising from OpenDB()
-	x1, err := NewEntity("OrigTest", "pwd", "blah", "NameOrigTest", "123 ABC Street", "OrigDescription", "originator")
+	x1, err := newEntity("OrigTest", "pwd", "blah", "NameOrigTest", "123 ABC Street", "OrigDescription", "originator")
 	if err == nil {
 		t.Fatalf("Able to create entity with invalid db, quitting!")
 	}
 
-	_, err = x1.ProposeContract("100 16x32 panels", 28000, "Puerto Rico", 6, "LEED+ Gold rated panels and this is random data out of nowhere and we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", 1, 1)
+	_, err = x1.Propose("100 16x32 panels", 28000, "Puerto Rico", 6, "LEED+ Gold rated panels and this is random data out of nowhere and we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", 1, 1)
 	// 1 for retrieving martin as the recipient and 1 is the project Index
 	if err == nil {
 		t.Fatalf("Able to propose contract with invalid db, quitting!")
 	}
-	_, err = x1.OriginContract("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", 1) // 1 is the index for martin
+	_, err = x1.Originate("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", 1) // 1 is the index for martin
 	if err == nil {
 		t.Fatal("Able to originate contract with invalid db, quitting!")
 	}
@@ -40,7 +40,7 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Able to promote contract even with invalid db, quitting!")
 	}
-	var y1 SolarProject
+	var y1 Project
 	err = y1.Save()
 	if err == nil {
 		t.Fatalf("Able to save file even though no db is present, quitting!")
@@ -53,24 +53,24 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Able to retrieve projects with invalid db, quitting!")
 	}
-	_, err = RetrieveProjects(1)
+	_, err = RetrieveProjectsAtStage(1)
 	if err == nil {
 		t.Fatalf("Able to retrieve stage projects with invalid db, quitting!")
 	}
-	_, err = RetrieveProjectsC(1, 1)
+	_, err = RetrieveContractorProjects(1, 1)
 	if err == nil {
 		t.Fatalf("Able to retrieve contractor projects with invalid db, quitting!")
 	}
-	_, err = RetrieveProjectsO(1, 1)
+	_, err = RetrieveOriginatorProjects(1, 1)
 	if err == nil {
 		t.Fatalf("Able to retrieve originated projects with invalid db, quitting!")
 	}
-	_, err = RetrieveProjectsR(1, 1)
+	_, err = RetrieveRecipientProjects(1, 1)
 	if err == nil {
 		t.Fatalf("Able to retrieve recipient projects with invalid db, quitting!")
 	}
 	var xy1 database.Investor
-	err = VoteTowardsProposedProject(&xy1, 1, 1)
+	err = VoteTowardsProposedProject(xy1.U.Index, 1, 1)
 	if err == nil {
 		t.Fatalf("Can vote towards a non existent proposed project, quitting!")
 	}
@@ -79,7 +79,7 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Can save entity which doesn't exist?")
 	}
-	_, err = RetrieveAllContractEntities("guarantor")
+	_, err = RetrieveAllEntities("guarantor")
 	if err == nil {
 		t.Fatalf("Can retreive contract entities from invalid db, quitting!")
 	}
@@ -98,7 +98,7 @@ func TestDb(t *testing.T) {
 	}
 	db.Close() // close immmediately after check
 	var project1 SolarParams
-	var dummy SolarProject
+	var dummy Project
 	// investors entity testing over, test recipients below in the same way
 	// now we repeat the same tests for all other entities
 	// connections and the other for non RPC connections
@@ -136,13 +136,13 @@ func TestDb(t *testing.T) {
 	project1.Location = "India Basin, San Francisco"
 	project1.MoneyRaised = 0
 	project1.Metadata = "India Basin is an upcoming creative project based in San Francisco that seeks to invite innovators from all around to participate"
-	project1.INVAssetCode = ""
-	project1.DEBAssetCode = ""
-	project1.PBAssetCode = ""
+	project1.InvestorAssetCode = ""
+	project1.DebtAssetCode = ""
+	project1.PaybackAssetCode = ""
 	project1.DateInitiated = ""
 	project1.Years = 3
-	project1.ProjectRecipient = recp
 	dummy.Params = project1
+	dummy.ProjectRecipient = recp
 	dummy.Contractor = newCE
 	dummy.Originator = newCE2
 	dummy.Stage = 3
@@ -179,7 +179,7 @@ func TestDb(t *testing.T) {
 	if projects[0].Params.Index != 1 {
 		t.Fatalf("Index of first element doesn't match, quitting!")
 	}
-	oProjects, err := RetrieveProjects(OriginProject)
+	oProjects, err := RetrieveProjectsAtStage(OriginProject)
 	if err != nil {
 		log.Println("Retrieve all error: ", err)
 		t.Errorf("Failed in retrieving all originated projects")
@@ -218,15 +218,15 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 	// tests for originators
-	newCE, err = NewEntity("OrigTest", "pwd", "blah", "NameOrigTest", "123 ABC Street", "OrigDescription", "originator")
+	newCE, err = newEntity("OrigTest", "pwd", "blah", "NameOrigTest", "123 ABC Street", "OrigDescription", "originator")
 	if err != nil {
 		t.Fatal(err)
 	}
-	allOrigs, err := RetrieveAllContractEntities("originator")
+	allOrigs, err := RetrieveAllEntities("originator")
 	if err != nil {
 		t.Fatal(err)
 	}
-	acz1, err := RetrieveAllContractEntities("random")
+	acz1, err := RetrieveAllEntities("random")
 	if len(acz1) != 0 {
 		log.Println(acz1)
 		t.Fatalf("Category which does not exist exists?")
@@ -234,23 +234,23 @@ func TestDb(t *testing.T) {
 	if len(allOrigs) != 2 || allOrigs[0].U.Name != "NameOrigTest2" {
 		t.Fatal("Names don't match, quitting!")
 	}
-	_, err = RetrieveAllContractEntities("guarantor")
+	_, err = RetrieveAllEntities("guarantor")
 	if err != nil {
 		t.Fatal(err)
 	}
-	allConts, err := RetrieveAllContractEntities("contractor")
+	allConts, err := RetrieveAllEntities("contractor")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(allConts) != 1 || allConts[0].U.Name != "NameConTest" {
 		t.Fatal("Names don't match, quitting!")
 	}
-	_, err = newCE.ProposeContract("100 16x32 panels", 28000, "Puerto Rico", 6, "LEED+ Gold rated panels and this is random data out of nowhere and we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", recp.U.Index, 1)
+	_, err = newCE.Propose("100 16x32 panels", 28000, "Puerto Rico", 6, "LEED+ Gold rated panels and this is random data out of nowhere and we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", recp.U.Index, 1)
 	// 1 for retrieving martin as the recipient and 1 is the project Index
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = newCE.ProposeContract("100 16x32 panels", 28000, "Puerto Rico", 6, "LEED+ Gold rated panels and this is random data out of nowhere and we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", 1000, 1)
+	_, err = newCE.Propose("100 16x32 panels", 28000, "Puerto Rico", 6, "LEED+ Gold rated panels and this is random data out of nowhere and we supply our own devs and provide insurance guarantee as well. Dual audit maintenance upto 1 year. Returns capped as per defaults", 1000, 1)
 	// 1 for retrieving martin as the recipient and 1 is the project Index
 	if err == nil {
 		t.Fatal("Able to retrieve non existent recipient, quitting!")
@@ -259,20 +259,20 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	rOx.Params.ProjectRecipient = recp
+	rOx.ProjectRecipient = recp
 	err = rOx.Save()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	allPCs, err := RetrieveProjectsR(ProposedProject, 6)
+	allPCs, err := RetrieveRecipientProjects(ProposedProject, 6)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(allPCs) != 1 { // add check for stuff here
 		log.Println("LEN all proposed projects", len(allPCs))
 	}
-	rPC, err := FindInKey(2, allPCs)
+	rPC, err := findInKey(2, allPCs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -281,17 +281,17 @@ func TestDb(t *testing.T) {
 	}
 
 	// now come the failure cases which should fail and we shall catch the case when they don't
-	allPCs, err = RetrieveProjectsC(ProposedProject, 2)
+	allPCs, err = RetrieveContractorProjects(ProposedProject, 2)
 	if len(allPCs) != 0 {
 		log.Println("LEBNGRG: ", len(allPCs))
 		t.Fatalf("Retrieving a missing contract succeeds, quitting!")
 	}
-	rPC, err = FindInKey(2, allPCs)
+	rPC, err = findInKey(2, allPCs)
 	if err == nil {
 		t.Fatalf("Entity which should be missing exists!")
 	}
 
-	// newCE, err = NewEntity("ConTest", "pwd", "NameConTest", "123 ABC Street", "ConDescription", "contractor")
+	// newCE, err = newEntity("ConTest", "pwd", "NameConTest", "123 ABC Street", "ConDescription", "contractor")
 	rCE, err := SearchForEntity("ConTest", "9f88a8d40b90616715f868ed195d24e5df994f56bce34eddb022c213484eb0f220d8907e4ecd8f64ddd364cb30bb5758b32ee26541f340b930f7e5bf756907a4")
 	if err != nil {
 		t.Fatal(err)
@@ -302,13 +302,13 @@ func TestDb(t *testing.T) {
 	}
 	trC1, err := RetrieveEntity(7)
 	if err != nil || trC1.U.Index == 0 {
-		t.Fatal("SolarProject Entity lookup failed")
+		t.Fatal("Project Entity lookup failed")
 	}
-	tmpx1, err := newCE2.OriginContract("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", recp.U.Index) // 1 is the index for martin
+	tmpx1, err := newCE2.Originate("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", recp.U.Index) // 1 is the index for martin
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = newCE2.OriginContract("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", 1000) // 1 is the index for martin
+	_, err = newCE2.Originate("100 16x24 panels on a solar rooftop", 14000, "Puerto Rico", 5, "ABC School in XYZ peninsula", 1000) // 1 is the index for martin
 	if err == nil {
 		t.Fatalf("Not quitting for invalid recipient index")
 	}
@@ -317,7 +317,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	allOOs, err := RetrieveProjects(6) // this checks for stage 1 and not zero like the thing installed above
+	allOOs, err := RetrieveProjectsAtStage(6) // this checks for stage 1 and not zero like the thing installed above
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -330,7 +330,12 @@ func TestDb(t *testing.T) {
 		t.Fatalf("Projects could not be retrieved!")
 	}
 	project1.Index = len(indexCheck) + 1
-	nOP, err := NewOriginProject(project1, newCE2)
+	nOP, err := newOriginProject(project1, newCE2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	nOP.ProjectRecipient = recp
+	err = nOP.Save()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -419,7 +424,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	allO, err := RetrieveProjectsO(OriginProject, newCE2.U.Index)
+	allO, err := RetrieveOriginatorProjects(OriginProject, newCE2.U.Index)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -434,23 +439,18 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = VoteTowardsProposedProject(&inv, 100, 2)
+	err = VoteTowardsProposedProject(inv.U.Index, 100, 2)
 	if err != nil {
 		t.Fatal(err)
 	}
-	// func UpdateProjectSlice(a *database.Recipient, project SolarParams) error {
-	recp.ReceivedSolarProjects = append(recp.ReceivedSolarProjects, project1.DEBAssetCode)
+	recp.ReceivedSolarProjects = append(recp.ReceivedSolarProjects, project1.DebtAssetCode)
 	// the above thing is to test the function itself and not the functionality since
-	// DEBAssetCode for project1 should be empty
+	// DebtAssetCode for project1 should be empty
 	err = recp.Save()
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = UpdateProjectSlice(&recp, project1)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = nOP.RecipientAuthorizeContract(recp) // again a placeholder for testing this function, not the flow itself
+	err = RecipientAuthorize(nOP.Params.Index, recp) // again a placeholder for testing this function, not the flow itself
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -458,7 +458,7 @@ func TestDb(t *testing.T) {
 	if chk != "0.257143" {
 		t.Fatalf("Balance doesn't match , quitting!")
 	}
-	var arr []SolarProject
+	var arr []Project
 	x, err := SelectContractByPrice(arr)
 	if err == nil {
 		t.Fatalf("Empty array returns choice")
@@ -477,12 +477,12 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 	/*
-	sc1[0]: YEARS: 3, PRICE: 14000
-	sc1[1]: YEARS: 6, PRICE: 28000
-	sc1[2]: YEARS: 5, PRICE: 14000
-	sc1[3]: YEARS: 3, PRICE: 14000
+		sc1[0]: YEARS: 3, PRICE: 14000
+		sc1[1]: YEARS: 6, PRICE: 28000
+		sc1[2]: YEARS: 5, PRICE: 14000
+		sc1[3]: YEARS: 3, PRICE: 14000
 	*/
-	var arrx []SolarProject // (6, 28000), (3, 14000)
+	var arrx []Project // (6, 28000), (3, 14000)
 	arrx = append(arr, sc1[1])
 	arrx = append(arr, sc1[0])
 	_, err = SelectContractByTime(arrx)
@@ -503,23 +503,23 @@ func TestDb(t *testing.T) {
 	if y.Params.Index != nOP.Params.Index {
 		t.Fatalf("Indices don't match, quitting!")
 	}
-	_, err = NewEntity("OrigTest", "pwd", "blah", "NameOrigTest", "123 ABC Street", "OrigDescription", "developer")
+	_, err = newEntity("OrigTest", "pwd", "blah", "NameOrigTest", "123 ABC Street", "OrigDescription", "developer")
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = NewEntity("OrigTest", "pwd", "blah", "NameOrigTest", "123 ABC Street", "OrigDescription", "guarantor")
+	_, err = newEntity("OrigTest", "pwd", "blah", "NameOrigTest", "123 ABC Street", "OrigDescription", "guarantor")
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = NewEntity("OrigTest", "pwd", "blah", "NameOrigTest", "123 ABC Street", "OrigDescription", "invalid")
+	_, err = newEntity("OrigTest", "pwd", "blah", "NameOrigTest", "123 ABC Street", "OrigDescription", "invalid")
 	if err == nil {
 		t.Fatalf("Not able to catch invalid contractor error, quitting!")
 	}
-	_, err = RetrieveAllContractEntities("developer")
+	_, err = RetrieveAllEntities("developer")
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = RetrieveAllContractEntities("gurantor")
+	_, err = RetrieveAllEntities("gurantor")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -527,14 +527,12 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Not able to catch invalid entity error, quitting!")
 	}
-	// func Payback(a *database.Recipient, uContract SolarProject, assetName string, issuerPubkey string, amount string, seed string) error
-	var ax1 database.Recipient
-	var uContract SolarProject
-	err = Payback(&ax1, uContract, "", "", "", "")
+	// func Payback(a *database.Recipient, project Project, assetName string, issuerPubkey string, amount string, seed string) error
+	err = Payback(1, 1, "", "", "", "", "")
 	if err == nil {
 		t.Fatal("Invalid params not caught, exiting!")
 	}
-	_, err = newEntityHelper("x", "x", "x", "x", "123 ABC Street", "x", "random")
+	_, err = newEntity("x", "x", "x", "x", "123 ABC Street", "x", "random")
 	if err == nil {
 		t.Fatalf("not able to catch invalid entity error")
 	}

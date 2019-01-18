@@ -22,47 +22,47 @@ var (
 // project
 // we could also alternately define contract states and then read the state from
 // our side and then compress this into a single function
-func (a *SolarProject) SetPreOriginProject() error {
+func (a *Project) SetPreOriginProject() error {
 	a.Stage = 0
 	return a.Save()
 }
 
-func (a *SolarProject) SetLegalContractStage() error {
+func (a *Project) SetLegalContractStage() error {
 	a.Stage = 0.5
 	return a.Save()
 }
 
-func (a *SolarProject) SetOriginProject() error {
+func (a *Project) SetOriginProject() error {
 	a.Stage = 1
 	return a.Save()
 }
 
-func (a *SolarProject) SetOpenForMoneyStage() error {
+func (a *Project) SetOpenForMoneyStage() error {
 	a.Stage = 1.5
 	return a.Save()
 }
 
-func (a *SolarProject) SetProposedProject() error {
+func (a *Project) SetProposedProject() error {
 	a.Stage = 2
 	return a.Save()
 }
 
-func (a *SolarProject) SetFinalizedProject() error {
+func (a *Project) SetFinalizedProject() error {
 	a.Stage = 3
 	return a.Save()
 }
 
-func (a *SolarProject) SetFundedProject() error {
+func (a *Project) SetFundedProject() error {
 	a.Stage = 4
 	return a.Save()
 }
 
-func (a *SolarProject) SetInstalledProjectStage() error {
+func (a *Project) SetInstalledProjectStage() error {
 	a.Stage = 5
 	return a.Save()
 }
 
-func (a *SolarProject) SetPowerGenerationStage() error {
+func (a *Project) SetPowerGenerationStage() error {
 	a.Stage = 6
 	return a.Save()
 }
@@ -70,7 +70,7 @@ func (a *SolarProject) SetPowerGenerationStage() error {
 // MW: Consider the steps required for the promotion of the project to happen (eg. verification and validation)
 func PromoteStage0To1Project(index int) error {
 	// we need to upgrade the contract's whose index is contractIndex to stage 1
-	projects, err := RetrieveProjects(PreOriginProject)
+	projects, err := RetrieveProjectsAtStage(PreOriginProject)
 	if err != nil {
 		return err
 	}
@@ -81,5 +81,5 @@ func PromoteStage0To1Project(index int) error {
 			return elem.SetOriginProject() // upgrade stage of this project
 		}
 	}
-	return fmt.Errorf("SolarProject not found, erroring!")
+	return fmt.Errorf("Project not found, erroring!")
 }

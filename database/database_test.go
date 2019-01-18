@@ -61,7 +61,7 @@ func TestDb(t *testing.T) {
 	}
 	_, err = RetrieveRecipient(1)
 	if err == nil {
-		t.Fatalf("Able to retrieve all recipients in database with wrong path")
+		t.Fatalf("Able to retrieve recipient in database with wrong path")
 	}
 	user, err := NewUser("user1", "blah", "blah", "User1")
 	if err == nil {
@@ -193,13 +193,13 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	tmpinv, err := RetrieveInvestor(1000)
-	if tmpinv.U.Index != 0 {
+	_, err = RetrieveInvestor(1000)
+	if err == nil {
 		t.Fatalf("Investor shouldn't exist, but does, quitting!")
 	}
 
-	tmprec, err := RetrieveRecipient(1000)
-	if tmprec.U.Index != 0 {
+	_, err = RetrieveRecipient(1000)
+	if err == nil {
 		t.Fatalf("Investor shouldn't exist, but does, quitting!")
 	}
 

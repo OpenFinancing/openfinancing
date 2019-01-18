@@ -10,11 +10,12 @@ import (
 // This function is returns a new entity with the bool "originator" as true
 // TODO: Consider any other information needed for originators that should be added to the Users/Entities struct, or create a new struct altogether
 func NewOriginator(uname string, pwd string, seedpwd string, Name string, Address string, Description string) (Entity, error) {
-	return NewEntity(uname, pwd, seedpwd, Name, Address, Description, "originator")
+	return newEntity(uname, pwd, seedpwd, Name, Address, Description, "originator")
 }
 
-func (contractor *Entity) OriginContract(panelSize string, totalValue int, location string, years int, metadata string, recIndex int) (SolarProject, error) {
-	var pc SolarProject
+// Originate creates and saves a new origin contract
+func (contractor *Entity) Originate(panelSize string, totalValue int, location string, years int, metadata string, recIndex int) (Project, error) {
+	var pc Project
 	var err error
 
 	// for this, create a new  contract and store in the contracts db. Wea re sorting
@@ -31,10 +32,10 @@ func (contractor *Entity) OriginContract(panelSize string, totalValue int, locat
 	pc.Params.Metadata = metadata
 	pc.Params.DateInitiated = utils.Timestamp()
 	iRecipient, err := database.RetrieveRecipient(recIndex)
-	if iRecipient.U.Index == 0 { // recipient does not exist
-		return pc, fmt.Errorf("Recipient does not exist!")
+	if err != nil { // recipient does not exist
+		return pc, err
 	}
-	pc.Params.ProjectRecipient = iRecipient
+	pc.ProjectRecipient = iRecipient
 	pc.Stage = 0 // 0 since we need to filter this out while retrieving the propsoed contracts
 	pc.Originator = *contractor
 	// instead of storing in this proposedcontracts slice, store it as a project, but not a contract and retrieve by stage

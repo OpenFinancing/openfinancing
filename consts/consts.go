@@ -10,11 +10,11 @@ import (
 // For more info about Stellar costs see: https://www.stellar.org/developers/guides/concepts/accounts.html
 var DonateBalance = "10"                                                             // we send this amount free to invesotrs who signup on our platform to enable them to have trustlines. Maybe we should have a payment provider and take money from them?
 var StablecoinTrustLimit = "100000"                                                  // the maximum limit that the investor trusts the stablecoin issuer for
-var INVAssetPrefix = "BondTokens_"                                                   // the prefix that will be hashed to give an investor AssetID
+var InvestorAssetPrefix = "BondTokens_"                                              // the prefix that will be hashed to give an investor AssetID
 var BondAssetPrefix = "BondTokens_"                                                  // the prefix that will be hashed to give a bond asset
 var CoopAssetPrefix = "CoopAsset_"                                                   // the prefix that will be hashed to give the cooperative asset
-var DEBAssetPrefix = "DEBTokens_"                                                    // the prefix that will be hashed to give a recipient AssetID
-var PBAssetPrefix = "PBTokens_"                                                      // the prefix that will be hashed to give a payback AssetID
+var DebtAssetPrefix = "DEBTokens_"                                                   // the prefix that will be hashed to give a recipient AssetID
+var PaybackAssetPrefix = "PBTokens_"                                                 // the prefix that will be hashed to give a payback AssetID
 var HomeDir = os.Getenv("HOME") + "/.openfinancing"                                  // home directory where we store the platform seed
 var PlatformSeedFile = HomeDir + "/platformseed.hex"                                 // the path where the platform's seed is stored
 var StableCoinSeedFile = HomeDir + "/stablecoinseed.hex"                             // the path where the stablecoin's seed is stored

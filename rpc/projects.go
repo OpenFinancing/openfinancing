@@ -23,12 +23,12 @@ func setupProjectRPCs() {
 	getFundedProjects()
 }
 
-func parseProject(r *http.Request) (solar.SolarProject, error) {
-	// we need to create an instance of the SolarProject
+func parseProject(r *http.Request) (solar.Project, error) {
+	// we need to create an instance of the Project
 	// and then map values if they do exist
 	// note that we just prepare the project here and don't invest in it
 	// for that, we need new a new investor struct and a recipient struct
-	var prepProject solar.SolarProject
+	var prepProject solar.Project
 	err := r.ParseForm()
 	if err != nil {
 		return prepProject, err
@@ -62,7 +62,7 @@ func insertProject() {
 	// look into a way where we can define originators in the route as well
 	http.HandleFunc("/project/insert", func(w http.ResponseWriter, r *http.Request) {
 		checkPost(w, r)
-		var prepProject solar.SolarProject
+		var prepProject solar.Project
 		prepProject, err := parseProject(r)
 		if err != nil {
 			errorHandler(w, r, http.StatusNotFound)
@@ -115,7 +115,7 @@ func getProject() {
 
 func projectHandler(w http.ResponseWriter, r *http.Request, stage float64) {
 	checkGet(w, r)
-	allProjects, err := solar.RetrieveProjects(stage)
+	allProjects, err := solar.RetrieveProjectsAtStage(stage)
 	if err != nil {
 		errorHandler(w, r, http.StatusNotFound)
 		return

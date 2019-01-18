@@ -54,49 +54,19 @@ type Entity struct {
 	// A Guarantor is someone who can vouch for the recipient and fill in for them
 	// in case they default on payment. They can c harge a fee and this must be
 	// put inside the contract itself.
-	PastContracts []SolarProject
+	PastContracts []Project
 	// list of all the contracts that the contractor has won in the past
-	ProposedContracts []SolarProject
+	ProposedContracts []Project
 	// the Originator proposes a contract which will then be taken up
 	// by a contractor, who publishes his own copy of the proposed contract
 	// which will be the set of contracts that will be sent to auction
-	PresentContracts []SolarProject
+	PresentContracts []Project
 	// list of all contracts that the contractor is presently undertaking1
 	PastFeedback []Feedback
 	// feedback received on the contractor from parties involved in the past
 	// What kind of proof do we want from the company? KYC?
 	// maybe we could have a photo op like exchanges do these days, with the owner
 	// holding up his drivers' license or similar
-}
-
-func newEntityHelper(uname string, pwd string, seedpwd string, Name string, Address string, Description string, role string) (Entity, error) {
-	// call this after the user has failled in username and password. Store hashed password
-	// in the database
-	var a Entity
-	var err error
-	a.U, err = database.NewUser(uname, pwd, seedpwd, Name)
-	if err != nil {
-		return a, err
-	}
-	// set all auto fields above
-	a.U.Address = Address
-	a.U.Description = Description
-	// insertion into the database will be a separate handler, pass this Entity there
-	switch role {
-	case "contractor":
-		a.Contractor = true
-	case "developer":
-		a.Developer = true
-	case "originator":
-		a.Originator = true
-	case "guarantor":
-		a.Guarantor = true
-	default:
-		return a, fmt.Errorf("invalid entity passed!")
-		// nothing, since only we call this function internally, this shouldn't arrive here
-	}
-	err = a.Save()
-	return a, err
 }
 
 func (a *Entity) Save() error {
@@ -117,23 +87,8 @@ func (a *Entity) Save() error {
 	return err
 }
 
-func NewEntity(uname string, pwd string, seedpwd string, Name string, Address string, Description string, role string) (Entity, error) {
-	var dummy Entity
-	switch role {
-	case "originator":
-		return newEntityHelper(uname, pwd, seedpwd, Name, Address, Description, "originator")
-	case "developer":
-		return newEntityHelper(uname, pwd, seedpwd, Name, Address, Description, "developer")
-	case "contractor":
-		return newEntityHelper(uname, pwd, seedpwd, Name, Address, Description, "contractor")
-	case "guarantor":
-		return newEntityHelper(uname, pwd, seedpwd, Name, Address, Description, "guarantor")
-	}
-	return dummy, fmt.Errorf("Invalid entity passed, check again!")
-}
-
 // gets all the proposed contracts for a particular recipient
-func RetrieveAllContractEntities(role string) ([]Entity, error) {
+func RetrieveAllEntities(role string) ([]Entity, error) {
 	var arr []Entity
 	temp, err := database.RetrieveAllUsers()
 	if err != nil {
@@ -241,5 +196,32 @@ func SearchForEntity(name string, pwhash string) (Entity, error) {
 		}
 		return fmt.Errorf("Not Found")
 	})
+	return a, err
+}
+
+func newEntity(uname string, pwd string, seedpwd string, Name string, Address string, Description string, role string) (Entity, error) {
+	var a Entity
+	var err error
+	a.U, err = database.NewUser(uname, pwd, seedpwd, Name)
+	if err != nil {
+		return a, err
+	}
+	// set all auto fields above
+	a.U.Address = Address
+	a.U.Description = Description
+	// insertion into the database will be a separate handler, pass this Entity there
+	switch role {
+	case "contractor":
+		a.Contractor = true
+	case "developer":
+		a.Developer = true
+	case "originator":
+		a.Originator = true
+	case "guarantor":
+		a.Guarantor = true
+	default:
+		return a, fmt.Errorf("invalid entity passed!")
+	}
+	err = a.Save()
 	return a, err
 }

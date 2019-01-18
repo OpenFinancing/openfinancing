@@ -1,9 +1,6 @@
 package solar
 
-import (
-	database "github.com/OpenFinancing/openfinancing/database"
-)
-
+// TODO: add more paramters here that would help identify a given solar project
 type SolarParams struct {
 	Index int // an Index to keep quick track of how many projects exist
 
@@ -14,20 +11,16 @@ type SolarParams struct {
 	Years       int    // number of years the recipient has chosen to opt for
 	Metadata    string // any other metadata can be stored here
 
-	Votes int // the number of votes towards a proposed contract by investors
-
 	// once all funds have been raised, we need to set assetCodes
-	INVAssetCode string
-	DEBAssetCode string
-	PBAssetCode  string
+	InvestorAssetCode string
+	DebtAssetCode     string
+	PaybackAssetCode  string
 
 	BalLeft float64 // denotes the balance left to pay by the party
+	Votes   int     // the number of votes towards a proposed contract by investors
 
 	DateInitiated string // date the project was created
 	DateFunded    string // date when the project was funded
 	DateLastPaid  string // date the project was last paid
-
-	ProjectRecipient database.Recipient
-	ProjectInvestors []database.Investor // TODO: get feedback on whether this is in its right place and whether this should be moved to contract
 	// Percentage raised is not stored in the database since that can be calculated by the UI
 }

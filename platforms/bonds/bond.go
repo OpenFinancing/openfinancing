@@ -148,11 +148,11 @@ func (a *ConstructionBond) Invest(issuerPublicKey string, issuerSeed string, inv
 	}
 	assetName := assets.AssetID(a.Params.MaturationDate + a.Params.SecurityType + a.Params.Rating + a.Params.BondIssuer) // get a unique assetID
 
-	if a.Params.INVAssetCode == "" {
+	if a.Params.InvestorAssetCode == "" {
 		// this person is the first investor, set the investor token name
-		INVAssetCode := assets.AssetID(consts.BondAssetPrefix + assetName)
-		a.Params.INVAssetCode = INVAssetCode                  // set the investeor code
-		_ = assets.CreateAsset(INVAssetCode, issuerPublicKey) // create the asset itself, since it would not have bene created earlier
+		InvestorAssetCode := assets.AssetID(consts.BondAssetPrefix + assetName)
+		a.Params.InvestorAssetCode = InvestorAssetCode             // set the investeor code
+		_ = assets.CreateAsset(InvestorAssetCode, issuerPublicKey) // create the asset itself, since it would not have bene created earlier
 	}
 	/*
 		dont check stableUSD balance for now
@@ -162,7 +162,7 @@ func (a *ConstructionBond) Invest(issuerPublicKey string, issuerSeed string, inv
 		}
 	*/
 	var INVAsset build.Asset
-	INVAsset.Code = a.Params.INVAssetCode
+	INVAsset.Code = a.Params.InvestorAssetCode
 	INVAsset.Issuer = issuerPublicKey
 	// make in v estor trust the asset that we provide
 	txHash, err := assets.TrustAsset(INVAsset, utils.FtoS(a.CostOfUnit*float64(a.NoOfUnits)), investor.U.PublicKey, investorSeed)
@@ -180,7 +180,7 @@ func (a *ConstructionBond) Invest(issuerPublicKey string, issuerSeed string, inv
 	// investor asset sent, update a.Params's BalLeft
 	a.AmountRaised += float64(investmentAmount)
 	investor.AmountInvested += float64(investmentAmount)
-	investor.InvestedBonds = append(investor.InvestedBonds, a.Params.INVAssetCode)
+	investor.InvestedBonds = append(investor.InvestedBonds, a.Params.InvestorAssetCode)
 	err = investor.Save() // save investor creds now that we're done
 	if err != nil {
 		return err

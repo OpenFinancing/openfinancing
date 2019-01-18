@@ -8,14 +8,14 @@ import (
 	"github.com/stellar/go/protocols/horizon"
 )
 
-func PrintProjects(projects []solar.SolarProject) {
+func PrintProjects(projects []solar.Project) {
 	for _, project := range projects {
 		PrintProject(project)
 	}
 }
 
 // this function pretty prints out some stuff that we need in main.go
-func PrintProject(project solar.SolarProject) {
+func PrintProject(project solar.Project) {
 	fmt.Println("          PROJECT INDEX: ", project.Params.Index)
 	fmt.Println("          Panel Size: ", project.Params.PanelSize)
 	fmt.Println("          Total Value: ", project.Params.TotalValue)
@@ -27,22 +27,22 @@ func PrintProject(project solar.SolarProject) {
 	PrintEntity(project.Originator)
 	fmt.Println("          PROJECT STAGE: ", project.Stage)
 	fmt.Println("          RECIPIENT: ")
-	PrintRecipient(project.Params.ProjectRecipient)
+	PrintRecipient(project.ProjectRecipient)
 	if project.Stage >= 2 {
 		fmt.Println("          PROJECT CONTRACTOR: ")
 		PrintEntity(project.Contractor)
 		fmt.Println("          Votes: ", project.Params.Votes)
 	}
 	if project.Stage >= 3 {
-		fmt.Println("          Investor Asset Code: ", project.Params.INVAssetCode)
+		fmt.Println("          Investor Asset Code: ", project.Params.InvestorAssetCode)
 		fmt.Println("          INVESTORS: ")
-		for _, investor := range project.Params.ProjectInvestors {
+		for _, investor := range project.ProjectInvestors {
 			PrintInvestor(investor)
 		}
 	}
 	if project.Stage == 4 {
-		fmt.Println("          Debt Asset Code: ", project.Params.DEBAssetCode)
-		fmt.Println("          Payback Asset Code: ", project.Params.PBAssetCode)
+		fmt.Println("          Debt Asset Code: ", project.Params.DebtAssetCode)
+		fmt.Println("          Payback Asset Code: ", project.Params.PaybackAssetCode)
 		fmt.Println("          Balance Left: ", project.Params.BalLeft)
 		fmt.Println("          Date Initiated: ", project.Params.DateInitiated)
 		fmt.Println("          Date Last Paid: ", project.Params.DateLastPaid)
@@ -55,7 +55,7 @@ func PrintInvestor(investor database.Investor) {
 	fmt.Println("          Your Seed is: ", investor.U.EncryptedSeed)
 	fmt.Println("          Your Voting Balance is: ", investor.VotingBalance)
 	fmt.Println("          You have Invested: ", investor.AmountInvested)
-	fmt.Println("          Your Invested Assets are: ", investor.InvestedAssets)
+	fmt.Println("          Your Invested Assets are: ", investor.InvestedSolarProjects)
 	fmt.Println("          Your Username is: ", investor.U.LoginUserName)
 	fmt.Println("          Your Password hash is: ", investor.U.LoginPassword)
 }

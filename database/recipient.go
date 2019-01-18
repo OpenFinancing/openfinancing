@@ -4,6 +4,7 @@ package database
 // the struct itself.
 import (
 	"encoding/json"
+	"fmt"
 
 	utils "github.com/OpenFinancing/openfinancing/utils"
 	xlm "github.com/OpenFinancing/openfinancing/xlm"
@@ -103,7 +104,8 @@ func RetrieveRecipient(key int) (Recipient, error) {
 		b := tx.Bucket(RecipientBucket)
 		x := b.Get(utils.ItoB(key))
 		if x == nil {
-			return nil
+			// there is no key with the specific details
+			return fmt.Errorf("Recipient not found!")
 		}
 		return json.Unmarshal(x, &inv)
 	})
@@ -119,11 +121,9 @@ func ValidateRecipient(name string, pwhash string) (Recipient, error) {
 	return RetrieveRecipient(user.Index)
 }
 
-// SendAssetToIssuer sends back assets fromn an asset holder to the issuer of the asset.
+// SendAssetToIssuer sends back assets from an asset holder to the issuer of the asset.
 func (a *Recipient) SendAssetToIssuer(assetName string, issuerPubkey string, amount string, seed string) (int32, string, error) {
 	// SendAssetToIssuer is FROM recipient / investor to issuer
-	// TODO: the platform / issuer doesn't send back the PBToken since PBTOkens are
-	// disabled as of now, can add back in later if needed.
 	paymentTx, err := build.Transaction(
 		build.SourceAccount{a.U.PublicKey},
 		build.TestNetwork,

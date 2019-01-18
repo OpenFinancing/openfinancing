@@ -224,21 +224,14 @@ func main() {
 				fmt.Printf("PAYING BACK %s TOWARDS PROJECT NUMBER: %d\n", paybackAmount, rtContract.Params.Index) // use the rtContract.Params here instead of using projectNumber from long ago
 				// now we need to call back the payback function to payback the asset
 				// Here, we will simply payback the DEBTokens that was sent to us earlier
-				if rtContract.Params.DEBAssetCode == "" {
+				if rtContract.Params.DebtAssetCode == "" {
 					log.Fatal("Project not found")
 				}
 
-				err = solar.Payback(&recipient, rtContract, rtContract.Params.DEBAssetCode, platformPublicKey, paybackAmount, recipientSeed)
+				err = solar.Payback(recipient.U.Index, rtContract.Params.Index, rtContract.Params.DebtAssetCode, platformPublicKey, platformSeed, paybackAmount, recipientSeed)
 				// TODO: right now, the payback asset directly sends back, change
 				if err != nil {
 					log.Println("PAYBACK TX FAILED, PLEASE TRY AGAIN!")
-					break
-				}
-				// now send back the PBToken from the platform to the issuer
-				// this function is optional and can be deleted in case we don't need PBAssets
-				err = assets.SendPBAsset(rtContract, recipient.U.PublicKey, paybackAmount, platformSeed, platformPublicKey)
-				if err != nil {
-					log.Println("PBAsset sending back FAILED, PLEASE TRY AGAIN!", err)
 					break
 				}
 				break
@@ -256,7 +249,7 @@ func main() {
 				}
 				break
 			case 5:
-				allContracts, err := solar.RetrieveProjectsR(solar.ProposedProject, recipient.U.Index)
+				allContracts, err := solar.RetrieveRecipientProjects(solar.ProposedProject, recipient.U.Index)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -321,7 +314,7 @@ func main() {
 				}
 			case 6:
 				fmt.Println("LIST OF ALL PRE ORIGIN PROJECTS BY ORIGINATORS (STAGE 0)")
-				allMyProjects, err := solar.RetrieveProjects(solar.PreOriginProject)
+				allMyProjects, err := solar.RetrieveProjectsAtStage(solar.PreOriginProject)
 				if err != nil {
 					log.Println(err)
 					continue
@@ -404,7 +397,7 @@ func main() {
 					}
 				case 4:
 					fmt.Println("LIST OF ALL PROPOSED CONTRACTS BY ME: ")
-					allMyProjects, err := solar.RetrieveProjectsC(solar.ProposedProject, contractor.U.Index)
+					allMyProjects, err := solar.RetrieveContractorProjects(solar.ProposedProject, contractor.U.Index)
 					if err != nil {
 						log.Println(err)
 						continue
@@ -435,14 +428,14 @@ func main() {
 				case 2:
 					PrintEntity(contractor)
 				case 3:
-					allMyProjects, err := solar.RetrieveProjectsO(solar.PreOriginProject, contractor.U.Index)
+					allMyProjects, err := solar.RetrieveOriginatorProjects(solar.PreOriginProject, contractor.U.Index)
 					if err != nil {
 						fmt.Println("RETURNING BACK TO THE MAIN LOOP: ", err)
 						continue
 					}
 					PrintProjects(allMyProjects)
 				case 4:
-					allMyProjects, err := solar.RetrieveProjectsO(solar.OriginProject, contractor.U.Index)
+					allMyProjects, err := solar.RetrieveOriginatorProjects(solar.OriginProject, contractor.U.Index)
 					if err != nil {
 						fmt.Println("RETURNING BACK TO THE MAIN LOOP: ", err)
 						continue
@@ -492,12 +485,12 @@ func main() {
 				}
 				// now the user has decided to invest in the asset with index uInput
 				// we need to retrieve the project and ask for confirmation
-				uContract, err := solar.RetrieveProject(oNumber)
+				solarProject, err := solar.RetrieveProject(oNumber)
 				if err != nil {
 					log.Println("Couldn't retrieve project, try again!")
 					continue
 				}
-				PrintProject(uContract)
+				PrintProject(solarProject)
 				fmt.Println(" HOW MUCH DO YOU WANT TO INVEST?")
 				investmentAmount, err := scan.ScanForStringWithCheckI()
 				if err != nil {
@@ -526,7 +519,7 @@ func main() {
 					log.Println(err)
 					break
 				}
-				recipient := uContract.Params.ProjectRecipient
+				recipient := solarProject.ProjectRecipient
 				// from here on, reference recipient
 				err = xlm.RefillAccount(recipient.U.PublicKey, platformSeed)
 				if err != nil {
@@ -559,7 +552,7 @@ func main() {
 				log.Println("The investor's public key and private key are: ", investor.U.PublicKey, " ", investorSeed)
 				log.Println("The recipient's public key and private key are: ", recipient.U.PublicKey, " ", recipientSeed)
 				// so now we have three entities setup, so we create the assets and invest in them
-				cProject, err := assets.InvestInProject(platformPublicKey, platformSeed, &investor, &recipient, investmentAmount, uContract, investorSeed, recipientSeed) // assume payback period is 5
+				cProject, err := solar.InvestInProject(solarProject.Params.Index, platformPublicKey, platformSeed, investor.U.Index, recipient.U.Index, investmentAmount, investorSeed, recipientSeed) // assume payback period is 5
 				if err != nil {
 					log.Println(err)
 				} else {
@@ -606,7 +599,7 @@ func main() {
 				// ie stage 2 projects for the recipient to have an understanding about
 				// which contracts are popular and can receive more investor money
 				fmt.Println("LIST OF ALL PROPOSED ORDERS: ")
-				allProposedProjects, err := solar.RetrieveProjects(solar.ProposedProject)
+				allProposedProjects, err := solar.RetrieveProjectsAtStage(solar.ProposedProject)
 				if err != nil {
 					log.Println(err)
 					break
@@ -625,7 +618,7 @@ func main() {
 					log.Println(err)
 					break
 				}
-				err = solar.VoteTowardsProposedProject(&investor, votes, vote)
+				err = solar.VoteTowardsProposedProject(investor.U.Index, votes, vote)
 				if err != nil {
 					log.Println(err)
 					break
@@ -659,7 +652,7 @@ func main() {
 				// try to retrieve the string back from ipfs and check if it works correctly
 			case 9:
 				fmt.Println("LIST OF ALL FUNDED PROJECTS: ")
-				allFundedProjects, err := solar.RetrieveProjects(solar.FundedProject)
+				allFundedProjects, err := solar.RetrieveProjectsAtStage(solar.FundedProject)
 				if err != nil {
 					fmt.Println(err)
 					break

@@ -38,7 +38,7 @@ func ValidateUser() {
 		var prepRecipient database.Recipient
 		rec := false
 		prepInvestor, err = database.RetrieveInvestor(prepUser.Index)
-		if err != nil || prepInvestor.U.Index == 0 {
+		if err != nil {
 			// means the user is a recipient, retrieve recipient credentials
 			rec = true
 			prepRecipient, err = database.ValidateRecipient(r.URL.Query()["LoginUserName"][0], r.URL.Query()["LoginPassword"][0])

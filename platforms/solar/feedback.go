@@ -16,6 +16,6 @@ type Feedback struct {
 	// regarding whom is this feedback about
 	Date string
 	// time at which this feedback was written
-	RelatedContract []SolarProject
+	RelatedContract []Project
 	// the contract regarding which this feedback is directed at
 }
