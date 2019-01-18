@@ -537,6 +537,7 @@ func TestDb(t *testing.T) {
 		t.Fatalf("not able to catch invalid entity error")
 	}
 	var recpx database.Recipient
+	recpx.ReceivedSolarProjects = append(recpx.ReceivedSolarProjects, dummy.Params.DebtAssetCode)
 	err = dummy.updateRecipient(recpx)
 	if err != nil {
 		t.Fatal(err)
