@@ -97,7 +97,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	err = parseYamlProject("1kwy", "data-sandbox/1kw.json", 8)
+	err = parseYamlProject("100kwy", "data-sandbox/100kw.json", 8)
 	if err != nil {
 		log.Fatal(err)
 	}

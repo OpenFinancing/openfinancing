@@ -28,23 +28,42 @@ func parseYamlProject(fileName string, feJson string, projIndex int) error {
 	if err != nil {
 		return err
 	}
-	terms := make([]opensolar.TermsHelper, 6)
-	termsHelper := viper.Get("Terms").(map[string]interface{})
 
-	i := 0
-	for _, elem := range termsHelper {
-		// elem inside here is a map of "variable": values.
-		newMap := elem.(map[string]interface{})
-		terms[i].Variable = newMap["variable"].(string)
-		terms[i].Value = newMap["value"].(string)
-		terms[i].RelevantParty = newMap["relevantparty"].(string)
-		terms[i].Note = newMap["note"].(string)
-		terms[i].Status = newMap["status"].(string)
-		terms[i].SupportDoc = newMap["supportdoc"].(string)
-		i += 1
+	termsHelper := viper.Get("Terms").(map[string]interface{})
+	if projIndex == 8 {
+		terms := make([]opensolar.TermsHelper, 8)
+		i := 0
+		for _, elem := range termsHelper {
+			// elem inside here is a map of "variable": values.
+			newMap := elem.(map[string]interface{})
+			terms[i].Variable = newMap["variable"].(string)
+			terms[i].Value = newMap["value"].(string)
+			terms[i].RelevantParty = newMap["relevantparty"].(string)
+			terms[i].Note = newMap["note"].(string)
+			terms[i].Status = newMap["status"].(string)
+			terms[i].SupportDoc = newMap["supportdoc"].(string)
+			i += 1
+		}
+
+		project.Terms = terms
+	} else {
+		terms := make([]opensolar.TermsHelper, 6)
+		i := 0
+		for _, elem := range termsHelper {
+			// elem inside here is a map of "variable": values.
+			newMap := elem.(map[string]interface{})
+			terms[i].Variable = newMap["variable"].(string)
+			terms[i].Value = newMap["value"].(string)
+			terms[i].RelevantParty = newMap["relevantparty"].(string)
+			terms[i].Note = newMap["note"].(string)
+			terms[i].Status = newMap["status"].(string)
+			terms[i].SupportDoc = newMap["supportdoc"].(string)
+			i += 1
+		}
+
+		project.Terms = terms
 	}
 
-	project.Terms = terms
 	var executiveSummary opensolar.ExecutiveSummaryHelper
 
 	execSummaryReader := viper.Get("ExecutiveSummary.Investment").(map[string]interface{})

@@ -43,35 +43,35 @@ Terms:
     Note:                  "Special Purpose Vehicle"
     Status:                "Engagement"
     SupportDoc:            "https://openlab.yale.edu"
-Terms2:
+  Terms2:
     Variable:              "Offtaker1"
     Value:                 "0.17 ct/KWh"
     RelevantParty:         "Sunshine Garden School"
     Note:                  "Fixed PPA determined by offtaker"
     Status:                "Signed"
     SupportDoc:            "https://openlab.yale.edu"
-Terms3:
+  Terms3:
     Variable:              "Offtaker2"
     Value:                 "0.17 ct/KWh"
     RelevantParty:         "Town Hall"
     Note:                  "Fixed PPA determined by offtaker"
     Status:                "Signed"
     SupportDoc:            "https://openlab.yale.edu"
- Terms4:
+  Terms4:
     Variable:              "Offtaker3"
     Value:                 "0.15 ct/KWh"
     RelevantParty:         "Infirmary"
     Note:                  "Fixed PPA determined by offtaker"
     Status:                "Signed"
     SupportDoc:            "https://openlab.yale.edu"
-Terms5:
+  Terms5:
     Variable:              "Offtaker4"
     Value:                 "0.12 ct/KWh, escalating 2.5% per year"
     RelevantParty:         "Residential Offtakers"
     Note:                  "Fixed PPA determined by offtaker"
     Status:                "Signed"
     SupportDoc:            "https://openlab.yale.edu"
-Terms6:
+  Terms6:
     Variable:              "Return"
     Value:                 "130%"
     RelevantParty:         "Equity Value"
@@ -85,14 +85,14 @@ Terms6:
     Note:                  "Crowd investors sell stock"
     Status:                "Flipped"
     SupportDoc:            "https://openlab.yale.edu"
-  Terms5:
+  Terms8:
     Variable:              "Guarantee"
     Value:                 "$46,000"
     RelevantParty:         "Rwanda Green Fund"
     Note:                  "Rwanda Green Bank covers 20% of first-loss"
     Status:                "Guarantor Secured"
     SupportDoc:            "https://openlab.yale.edu"
-  Terms6:
+  Terms9:
     Variable:              "Insurance"
     Value:                 "Basic"
     RelevantParty:         "Swiss Reinsurance"
