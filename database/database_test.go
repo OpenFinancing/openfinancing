@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	utils "github.com/Varunram/essentials/utils"
+	"github.com/Varunram/essentials/utils"
 	xlm "github.com/Varunram/essentials/xlm"
 	assets "github.com/Varunram/essentials/xlm/assets"
 	consts "github.com/YaleOpenLab/openx/consts"
@@ -20,7 +20,10 @@ func TestDb(t *testing.T) {
 	var err error
 	consts.SetConsts(false)
 	os.Remove("blahopenx.db")
-	consts.DbDir = "blah"   // set to a false db so that we can test errors arising from OpenDB()
+	consts.DbDir = "blah" // set to a false db so that we can test errors arising from OpenDB()
+	xlm.SetConsts(10, false)
+	consts.StablecoinPublicKey = "GAVEVWKMXVQ2WSCBTR7M5UKRVFFWIA52VP7ISDKZSEJKQS2VYG4D6C6P"
+	consts.PlatformPublicKey = "GAJJMQAP5KG7GVCOVY2NUUJCVFX72GXZKMUQUCWUGN55EKFS3MXFAMEZ"
 	CreateHomeDir()         // create home directory if it doesn't exist yet
 	os.Remove(consts.DbDir) // remove the test database file, if it exists
 	db, err := OpenDB()
@@ -29,78 +32,150 @@ func TestDb(t *testing.T) {
 	}
 	db.Close() // close immmediately after check
 
-	user, err := NewUser("user1", "blah", "blah", "User1")
+	username := "testusername"
+	userpwhash := utils.SHA3hash("testpass")
+	seedpwd := "x"
+	email := "User1"
+
+	user, err := NewUser(username, userpwhash, seedpwd, email)
 	if err != nil {
 		t.Fatal(err)
 	}
-	user.AccessToken = "ACCESSTOKEN"
-	user.AccessTokenTimeout = utils.Unix() + 1000000
+
+	_, err = CheckUsernameCollision(user.Username)
+	if err == nil {
+		t.Fatalf("can't catch username collision")
+	}
+
+	user.Conf = true
+
+	accessToken, err := user.GenAccessToken()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	user, err = RetrieveUser(user.Index)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if user.Username != username {
+		t.Fatalf("Usernames don't match. quitting!")
+	}
+
+	_, err = ValidateAccessToken(username, accessToken)
+	if err != nil {
+		log.Println(err)
+		t.Fatalf("couldn't validate access token")
+	}
+
+	_, err = ValidateAccessToken(username, "faketoken")
+	if err == nil {
+		log.Println(err)
+		t.Fatalf("didn't fail on fake token")
+	}
+
+	_, err = ValidateAccessToken("fakeusername", accessToken)
+	if err == nil {
+		log.Println(err)
+		t.Fatalf("didn't fail on fake username")
+	}
+
+	_, err = ValidateAccessToken("fakeusername", "faketoken")
+	if err == nil {
+		log.Println(err)
+		t.Fatalf("didn't fail on fake username and token")
+	}
+
+	user.AccessToken[accessToken] = 0
 	err = user.Save()
 	if err != nil {
 		t.Fatal(err)
 	}
-	user1, err := RetrieveUser(user.Index)
+
+	user, err = RetrieveUser(user.Index)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if user1.Username != "user1" {
-		log.Println(user1.Name)
-		t.Fatalf("Usernames don't match. quitting!")
+
+	_, err = ValidateAccessToken(username, accessToken)
+	if err == nil {
+		log.Println(err)
+		t.Fatalf("didn't error out on token timeout")
 	}
 
-	tmpuser, _ := RetrieveUser(1000)
-	if tmpuser.Index != 0 {
-		t.Fatalf("Investor shouldn't exist, but does, quitting!")
+	user1000, _ := RetrieveUser(1000)
+	if user1000.Index != 0 {
+		t.Fatalf("User shouldn't exist, but does, quitting!")
 	}
 
 	allUsers, err := RetrieveAllUsers()
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	if len(allUsers) != 1 {
 		t.Fatalf("Unknown users existing, quitting!")
 	}
 
-	_, err = ValidateAccessToken("user1", "ACCESSTOKEN")
-	if err != nil {
-		log.Println(err)
-		t.Fatalf("Data in bucket morphed, quitting!")
-	}
-
-	_, err = ValidateAccessToken("blah", "ACCESSTOKEN")
-	if err == nil {
-		log.Println(err)
-		t.Fatalf("Data in bucket morphed, quitting!")
-	}
-
-	err = user.GenKeys("blah")
+	err = user.GenKeys(seedpwd)
 	if err != nil {
 		t.Fatalf("Not able to generate keys, quitting!")
 	}
 
-	_, err = ValidateSeedpwd(user.Username, user.Pwhash, "blah")
+	_, err = ValidateSeedpwd(username, userpwhash, seedpwd)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	_, err = ValidateSeedpwd("shouldfail", user.Pwhash, "blah")
+	_, err = ValidateSeedpwd("fakeusername", userpwhash, seedpwd)
 	if err == nil {
-		t.Fatalf("can't catch wrong username")
+		t.Fatalf("can't catch fake username")
 	}
 
-	_, err = ValidateSeedpwd(user.Username, user.Pwhash, "shouldfail")
+	_, err = ValidateSeedpwd(user.Username, user.Pwhash, "fakeseedpwd")
 	if err == nil {
-		t.Fatalf("can't catch wrong seedpwd")
+		t.Fatalf("can't catch fake seedpwd")
 	}
 
-	err = user.GenKeys("algorand", "algorand")
-	if err == nil {
-		t.Fatalf("able to generate algorand keys even when daemon is not running")
+	fakeEmailUser, _ := SearchWithEmailID("fakeemail")
+	if fakeEmailUser.Index != 0 {
+		t.Fatalf("user with invalid email exists")
 	}
 
-	err = xlm.GetXLM(user.StellarWallet.PublicKey)
+	err = user.AddEmail(email)
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	_, err = SearchWithEmailID(email)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	accessToken, err = user.GenAccessToken()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = ValidateSeedpwdAuthToken(user.Username, accessToken, seedpwd)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = ValidateSeedpwdAuthToken("fakeusername", accessToken, seedpwd)
+	if err == nil {
+		t.Fatalf("not able to detect fake username")
+	}
+
+	_, err = ValidateSeedpwdAuthToken(user.Username, "fakeaccesstoken", seedpwd)
+	if err == nil {
+		t.Fatalf("not able to detect fake access token")
+	}
+
+	_, err = ValidateSeedpwdAuthToken(user.Username, accessToken, "fakeseedpwd")
+	if err == nil {
+		t.Fatalf("not able to detect fake seedpwd")
 	}
 
 	err = xlm.GetXLM(user.SecondaryWallet.PublicKey)
@@ -108,21 +183,30 @@ func TestDb(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	err = xlm.GetXLM(user.StellarWallet.PublicKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	time.Sleep(5 * time.Second)
-	err = user.IncreaseTrustLimit("blah", 10)
+	err = user.IncreaseTrustLimit(seedpwd, 10)
 	if err != nil {
 		t.Fatal(err)
 	}
-	_ = build.CreditAsset{"blah", user.StellarWallet.PublicKey}
-	pkSeed, _, err := xlm.GetKeyPair()
+
+	pkSeed, pk, err := xlm.GetKeyPair()
 	if err != nil {
 		t.Fatal(err)
 	}
-	_ = build.CreditAsset{"blah2", pkSeed} // this account doesn't exist yet, so this should fail
-	_, err = assets.TrustAsset("blah2", "", -1, "blah")
+
+	assetCode := "assetcode"
+	_ = build.CreditAsset{Code: assetCode, Issuer: pkSeed} // this account doesn't exist yet, so this should fail
+
+	_, err = assets.TrustAsset(assetCode, pk, -1, seedpwd)
 	if err == nil {
 		t.Fatalf("can trust invalid asset")
 	}
+
 	_, err = RetrieveAllUsersWithoutKyc()
 	if err != nil {
 		t.Fatal(err)
@@ -198,11 +282,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	testuser, _ := SearchWithEmailID("blahx@blah.com")
-	if testuser.Index != 0 {
-		t.Fatalf("user with invalid email exists")
-	}
-	err = user.MoveFundsFromSecondaryWallet(10, "blah")
+	err = user.MoveFundsFromSecondaryWallet(10, seedpwd)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -214,11 +294,11 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("can transfer more amount than possessed")
 	}
-	err = user.MoveFundsFromSecondaryWallet(-1, "blah")
+	err = user.MoveFundsFromSecondaryWallet(-1, seedpwd)
 	if err == nil {
 		t.Fatalf("not able to catch invalid amount error")
 	}
-	err = user.SweepSecondaryWallet("blah")
+	err = user.SweepSecondaryWallet(seedpwd)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -230,31 +310,7 @@ func TestDb(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	token, err := user.GenAccessToken()
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = ValidateSeedpwdAuthToken(user.Username, token, "blah")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	_, err = ValidateSeedpwdAuthToken("fakeusername", token, "blah")
-	if err == nil {
-		t.Fatalf("not able to detect fake username")
-	}
-
-	_, err = ValidateSeedpwdAuthToken(user.Username, "fakeaccesstoken", "blah")
-	if err == nil {
-		t.Fatalf("not able to detect fake access token")
-	}
-
-	_, err = ValidateSeedpwdAuthToken(user.Username, token, "fakeseedpwd")
-	if err == nil {
-		t.Fatalf("not able to detect fake seedpwd")
-	}
-
-	err = user.AddtoMailbox("test", "test")
+	err = user.AddtoMailbox("subject", "message")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -263,7 +319,7 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("able to decrypt empty byte array")
 	}
-	err = user.ImportSeed(user.StellarWallet.EncryptedSeed, user.StellarWallet.PublicKey, "blah")
+	err = user.ImportSeed(user.StellarWallet.EncryptedSeed, user.StellarWallet.PublicKey, seedpwd)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -283,21 +339,7 @@ func TestDb(t *testing.T) {
 	if err == nil {
 		t.Fatalf("able to give more feedback than 5")
 	}
-
 	err = user.GiveFeedback(user.Index, 5)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = user.AddEmail("ghost@ghosts.com")
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = CheckUsernameCollision(user.Username)
-	if err == nil {
-		t.Fatalf("can't catch username collision")
-	}
-	user.Admin = true
-	err = user.Save()
 	if err != nil {
 		t.Fatal(err)
 	}
