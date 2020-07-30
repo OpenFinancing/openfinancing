@@ -1,6 +1,7 @@
 # OpenX
 
 [![Build Status](https://travis-ci.com/YaleOpenLab/openx.svg?branch=master)](https://travis-ci.com/YaleOpenLab/openx)
+![Github Build Status](https://github.com/YaleOpenLab/openx/workflows/.github/workflows/go.yml/badge.svg)
 [![Codecov](https://codecov.io/gh/YaleOpenLab/openx/branch/master/graph/badge.svg)](https://codecov.io/gh/YaleOpenLab/openx)
 [![Go Report Card](https://goreportcard.com/badge/github.com/YaleOpenLab/openx)](https://goreportcard.com/report/github.com/YaleOpenLab/openx)
 
