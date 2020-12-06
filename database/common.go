@@ -2,7 +2,6 @@ package database
 
 import (
 	"encoding/json"
-
 	"github.com/pkg/errors"
 
 	edb "github.com/Varunram/essentials/database"
@@ -108,9 +107,11 @@ func ValidatePwhash(name string, pwhash string) (User, error) {
 	}
 
 	for _, user := range users {
-		if !user.Conf {
-			continue
-		}
+		// Running locally without token confirmation
+
+		//if !user.Conf {
+		//	continue
+		//}
 		if user.Username == name && user.Pwhash == pwhash {
 			return user, nil
 		}
@@ -148,9 +149,10 @@ func ValidateAccessToken(name string, accessToken string) (User, error) {
 	}
 
 	for _, user := range users {
-		if !user.Conf {
-			continue
-		}
+		// Running locally without token confirmation
+		//if !user.Conf {
+		//	continue
+		//}
 		if user.Username == name {
 			dummy = user
 			break
